@@ -1,0 +1,90 @@
+{
+  "entities": {
+    "Business": {
+      "title": "Business",
+      "description": "Represents a business entity on the platform.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "ownerName": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "planId": { "type": "string", "enum": ["STARTER", "GROWTH", "ENTERPRISE"] },
+        "status": { "type": "string", "enum": ["PENDING", "ACTIVE", "SUSPENDED"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "ownerId", "planId", "status"]
+    },
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Extended user profile data for auth users.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string", "enum": ["OWNER", "WORKER", "SUPERADMIN"] },
+        "businessId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "An item in the business inventory.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "sku": { "type": "string" },
+        "category": { "type": "string" },
+        "price": { "type": "number" },
+        "stock": { "type": "number" },
+        "minStock": { "type": "number" },
+        "businessId": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "price", "stock", "businessId"]
+    },
+    "Sale": {
+      "title": "Sale",
+      "description": "A transaction record.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "businessId": { "type": "string" },
+        "workerId": { "type": "string" },
+        "total": { "type": "number" },
+        "paymentMethod": { "type": "string" },
+        "items": { "type": "array" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["businessId", "total", "createdAt"]
+    }
+  },
+  "firestore": {
+    "businesses/{businessId}": {
+      "schema": "Business",
+      "description": "Collection of all businesses."
+    },
+    "users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Collection of user profiles."
+    },
+    "businesses/{businessId}/inventory/{productId}": {
+      "schema": "Product",
+      "description": "Inventory items for a specific business."
+    },
+    "businesses/{businessId}/sales/{saleId}": {
+      "schema": "Sale",
+      "description": "Sales records for a specific business."
+    },
+    "admins/{userId}": {
+        "schema": "UserProfile",
+        "description": "Super admin restricted collection."
+    }
+  }
+}

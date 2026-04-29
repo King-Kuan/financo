@@ -1,0 +1,98 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 0. Global Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() { return request.auth != null; }
+    function isAdmin() { return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)); }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    
+    // User must be verified (optional constraint if email verification is used)
+    function isVerified() { return request.auth.token.email_verified == true; }
+
+    // Domain Helpers
+    function businessExists(busId) { return exists(/databases/$(database)/documents/businesses/$(busId)); }
+    function isBusinessMember(busId) { 
+      let profile = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+      return profile.businessId == busId;
+    }
+
+    // --- Users Collection ---
+    match /users/{userId} {
+      allow get: if isSignedIn(); // Allow checking roles
+      allow list: if isAdmin();
+      allow create: if isSignedIn() && isOwner(userId) && isValidUser(incoming());
+      allow update: if isSignedIn() && isOwner(userId) && (
+        // Only allow updating name, not role or businessId
+        incoming().diff(existing()).affectedKeys().hasOnly(['name', 'updatedAt'])
+      );
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'role', 'createdAt']) && 
+             data.uid == request.auth.uid &&
+             data.role in ['OWNER', 'WORKER'] &&
+             data.email is string && data.email.size() <= 256;
+    }
+
+    // --- Businesses Collection ---
+    match /businesses/{businessId} {
+      allow get: if isSignedIn() && (isOwner(existing().ownerId) || isBusinessMember(businessId) || isAdmin());
+      allow list: if isSignedIn() && (resource.data.ownerId == request.auth.uid || isAdmin());
+      
+      allow create: if isSignedIn() && isValidId(businessId) && isValidBusiness(incoming()) && incoming().ownerId == request.auth.uid;
+      allow update: if isSignedIn() && isOwner(existing().ownerId) && (
+        (incoming().diff(existing()).affectedKeys().hasOnly(['name', 'phone', 'planId', 'status', 'updatedAt']))
+      );
+    }
+
+    function isValidBusiness(data) {
+      return data.keys().hasAll(['name', 'ownerId', 'ownerName', 'planId', 'status', 'createdAt']) &&
+             data.ownerId == request.auth.uid &&
+             data.planId in ['STARTER', 'GROWTH', 'ENTERPRISE'] &&
+             data.status in ['PENDING', 'ACTIVE'] &&
+             data.name is string && data.name.size() <= 128;
+    }
+
+    // --- Inventory Subcollection ---
+    match /businesses/{businessId}/inventory/{productId} {
+      allow read: if isSignedIn() && (isBusinessMember(businessId) || isAdmin());
+      allow write: if isSignedIn() && isBusinessMember(businessId) && isValidProduct(incoming());
+    }
+
+    function isValidProduct(data) {
+      return data.keys().hasAll(['name', 'price', 'stock', 'businessId']) &&
+             data.price is number && data.price >= 0 &&
+             data.stock is number &&
+             data.businessId is string;
+    }
+
+    // --- Sales Subcollection ---
+    match /businesses/{businessId}/sales/{saleId} {
+      allow read: if isSignedIn() && (isBusinessMember(businessId) || isAdmin());
+      // Sales are usually append-only for workers
+      allow create: if isSignedIn() && isBusinessMember(businessId) && isValidSale(incoming());
+    }
+
+    function isValidSale(data) {
+      return data.keys().hasAll(['businessId', 'total', 'createdAt']) &&
+             data.total is number && data.total >= 0 &&
+             data.createdAt == request.time;
+    }
+
+    // --- Admins Collection ---
+    match /admins/{userId} {
+      allow read: if isAdmin();
+      // Only existing admins can add new admins via console or backend
+      allow write: if false; 
+    }
+  }
+}
