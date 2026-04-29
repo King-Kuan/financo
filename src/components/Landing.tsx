@@ -206,6 +206,36 @@ export default function Landing({ onGetStarted }: { onGetStarted: () => void }) 
         </div>
       </section>
 
+      {/* Admin Setup Guide Section */}
+      <section className="py-24 px-6 lg:px-12 bg-white/5 border-y border-white/5">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center gap-3 mb-8">
+            <ShieldCheck size={32} className="text-ent" />
+            <h2 className="text-3xl font-head font-bold text-white uppercase italic tracking-tighter">Admin Authorization Protocol</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <div className="space-y-4">
+              <h4 className="text-white font-bold flex items-center gap-2">
+                <div className="w-6 h-6 rounded-lg bg-ent/20 flex items-center justify-center text-[10px]">1</div>
+                Whitelist Domains
+              </h4>
+              <p className="text-text3 text-sm leading-relaxed">
+                Add your deployment URL to <strong>Firebase Auth &gt; Settings &gt; Authorized Domains</strong> to enable Google Login.
+              </p>
+            </div>
+            <div className="space-y-4">
+              <h4 className="text-white font-bold flex items-center gap-2">
+                <div className="w-6 h-6 rounded-lg bg-ent/20 flex items-center justify-center text-[10px]">2</div>
+                Provision Admin
+              </h4>
+              <p className="text-text3 text-sm leading-relaxed">
+                Manually create a document in the <code>admins/</code> collection using your <strong>UID</strong> as the document ID in the Firebase Console.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing Section */}
       <section id="plans" className="py-24 px-6 lg:px-12">
         <div className="max-w-7xl mx-auto">
@@ -248,7 +278,8 @@ export default function Landing({ onGetStarted }: { onGetStarted: () => void }) 
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-growth to-ent flex items-center justify-center font-head font-bold text-white text-xs">F</div>
           <span className="font-head font-bold tracking-tight text-white">Financo</span>
         </div>
-        <p className="text-text4 text-[10px] font-bold uppercase tracking-[0.4em]">The Palace Tech House • Kigali, Rwanda</p>
+        <p className="text-text4 text-[10px] font-bold uppercase tracking-[0.2em] mb-2">The Palace, Inc. - The Palace Tech House</p>
+        <p className="text-text4 text-[9px] font-medium uppercase tracking-[0.1em] opacity-50">&copy; 2026 All Rights Reserved • Kigali, Rwanda</p>
       </footer>
     </div>
   );
