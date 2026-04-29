@@ -13,7 +13,10 @@ import {
   Package, 
   Smartphone, 
   BarChart3,
-  Globe
+  Globe,
+  Users,
+  CreditCard,
+  History
 } from 'lucide-react';
 import { PLANS } from '../constants';
 import { motion } from 'motion/react';
@@ -22,22 +25,22 @@ export default function Landing({ onGetStarted }: { onGetStarted: () => void }) 
   return (
     <div className="bg-bg text-text min-h-screen font-sans selection:bg-growth selection:text-white">
       {/* Navbar */}
-      <nav className="h-20 flex items-center justify-between px-6 lg:px-12 glass border-white/5 sticky top-0 z-[100]">
+      <nav className="h-20 flex items-center justify-between px-6 lg:px-12 glass border-white/5 sticky top-0 z-[100] bg-bg/80 backdrop-blur-lg">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-growth to-ent flex items-center justify-center font-head font-bold text-white text-lg">F</div>
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-growth to-ent flex items-center justify-center font-head font-bold text-white text-lg shadow-lg shadow-growth/20">F</div>
           <span className="font-head font-extrabold text-2xl tracking-tighter text-white">Financo</span>
         </div>
-        <div className="hidden md:flex items-center gap-8 text-sm font-bold text-text3 uppercase tracking-widest">
+        <div className="hidden md:flex items-center gap-8 text-[11px] font-bold text-text3 uppercase tracking-[0.15em]">
           <a href="#features" className="hover:text-growth transition-colors">Features</a>
+          <a href="#demo-info" className="hover:text-growth transition-colors">How it works</a>
           <a href="#plans" className="hover:text-growth transition-colors">Pricing</a>
-          <a href="#benefits" className="hover:text-growth transition-colors">Benefits</a>
         </div>
         <div className="flex items-center gap-4">
           <button 
             onClick={onGetStarted}
             className="px-6 py-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-bold transition-all border border-white/10"
           >
-            Login
+            Terminal Login
           </button>
           <button 
             onClick={onGetStarted}
@@ -62,7 +65,7 @@ export default function Landing({ onGetStarted }: { onGetStarted: () => void }) 
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 mb-8"
           >
             <Zap size={14} className="text-growth fill-growth/20" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text3">Built for Rwandan SMEs</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-text3">The Standard for Rwandan SME Operations</span>
           </motion.div>
           
           <motion.h1 
@@ -78,9 +81,9 @@ export default function Landing({ onGetStarted }: { onGetStarted: () => void }) 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-text2 text-lg lg:text-xl max-w-2xl mx-auto leading-relaxed mb-12"
+            className="text-text2 text-lg lg:text-xl max-w-2xl mx-auto leading-relaxed mb-12 font-medium"
           >
-            Comprehensive financial management with offline POS, inventory tracking, and MoMo integration. Simplify your numbers, grow your legacy.
+            Comprehensive financial management with offline POS, multi-location inventory, and integrated payroll. Simplify your numbers, grow your legacy.
           </motion.p>
           
           <motion.div 
@@ -95,105 +98,125 @@ export default function Landing({ onGetStarted }: { onGetStarted: () => void }) 
             >
               Get Started Now <ArrowRight size={20} />
             </button>
-            <button className="w-full sm:w-auto px-10 py-5 bg-white/5 text-text hover:bg-white/10 rounded-[24px] font-head font-bold text-lg border border-white/10 transition-all">
-              Watch Demo
-            </button>
+            <a href="#demo-info" className="w-full sm:w-auto px-10 py-5 bg-white/5 text-text hover:bg-white/10 rounded-[24px] font-head font-bold text-lg border border-white/10 transition-all text-center">
+              Explore Features
+            </a>
           </motion.div>
         </div>
       </section>
 
-      {/* Features Grid */}
-      <section id="features" className="py-24 px-6 lg:px-12 bg-bg-soft/50">
+      {/* Feature Walkthrough (The "Demo More Information") */}
+      <section id="demo-info" className="py-24 px-6 lg:px-12">
         <div className="max-w-7xl mx-auto">
-          <div className="mb-20">
-            <h2 className="font-head font-bold text-3xl lg:text-4xl text-white mb-4">Powerful Features</h2>
-            <p className="text-text3 text-lg">Everything you need to run a modern shop or warehouse.</p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center mb-32">
+            <div>
+              <div className="w-12 h-12 rounded-2xl bg-growth/10 flex items-center justify-center text-growth mb-6">
+                <Smartphone size={24} />
+              </div>
+              <h2 className="text-3xl lg:text-5xl font-head font-bold text-white mb-6 leading-tight">Hybrid-Cloud POS <br/> <span className="text-growth">Works Offline.</span></h2>
+              <p className="text-text3 text-lg leading-relaxed mb-8">
+                Never lose a sale due to poor network. Our proprietary sync engine handles transactions locally and updates the cloud the moment you're back online. 
+              </p>
+              <ul className="space-y-4">
+                {['Instant Receipt Generation', 'Mobile Money (MoMo) Native Integration', 'Split-Payment Support (Cash/Card/MoMo)'].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-text2 font-medium">
+                    <CheckCircle2 size={18} className="text-growth shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="glass rounded-[40px] p-8 border-white/5 relative overflow-hidden group">
+               <div className="absolute inset-0 bg-gradient-to-tr from-growth/10 to-transparent"></div>
+               <img 
+                 src="https://images.unsplash.com/photo-1556742044-3c52d6e88c62?q=80&w=800&auto=format&fit=crop" 
+                 alt="POS Preview" 
+                 className="rounded-2xl shadow-2xl grayscale group-hover:grayscale-0 transition-all duration-700 hover:scale-[1.02]"
+               />
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <FeatureCard 
-              icon={Smartphone} 
-              title="Modern POS" 
-              desc="Sell anywhere, even offline. Syncs automatically when you reconnect to the network." 
-            />
-            <FeatureCard 
-              icon={Package} 
-              title="Smart Inventory" 
-              desc="Real-time stock levels, low-stock alerts on WhatsApp, and automated reorder tracking." 
-            />
-            <FeatureCard 
-              icon={TrendingUp} 
-              title="AI Intelligence" 
-              desc="Business health scores and automated financial advice to improve your margins." 
-            />
-            <FeatureCard 
-              icon={BarChart3} 
-              title="Local Compliance" 
-              desc="RSSB and PAYE ready payroll, tax-ready invoicing, and localized financial reporting." 
-            />
-            <FeatureCard 
-              icon={ShieldCheck} 
-              title="Secure Hierarchy" 
-              desc="Separate Owner and Worker roles with granular permissions to protect your data." 
-            />
-            <FeatureCard 
-              icon={Globe} 
-              title="Cloud Native" 
-              desc="Access your reports from anywhere in the world on Web, iOS, or Android." 
-            />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+            <div className="order-2 lg:order-1 glass rounded-[40px] p-8 border-white/5 relative overflow-hidden group">
+               <div className="absolute inset-0 bg-gradient-to-tr from-ent/10 to-transparent"></div>
+               <img 
+                 src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=800&auto=format&fit=crop" 
+                 alt="Inventory Preview" 
+                 className="rounded-2xl shadow-2xl grayscale group-hover:grayscale-0 transition-all duration-700 hover:scale-[1.02]"
+               />
+            </div>
+            <div className="order-1 lg:order-2">
+              <div className="w-12 h-12 rounded-2xl bg-ent/10 flex items-center justify-center text-ent mb-6">
+                <Package size={24} />
+              </div>
+              <h2 className="text-3xl lg:text-5xl font-head font-bold text-white mb-6 leading-tight">Advanced Inventory <br/> <span className="text-ent">Visibility.</span></h2>
+              <p className="text-text3 text-lg leading-relaxed mb-8">
+                Keep track of every item in your warehouse or store. Set automated low-stock triggers and get notified on WhatsApp before you run out.
+              </p>
+              <ul className="space-y-4">
+                {['Multi-Warehouse Reconciliation', 'Automated Bulk SKU Import', 'Real-time Stock Valuation Reports'].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-text2 font-medium">
+                    <CheckCircle2 size={18} className="text-ent shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Benefits Section */}
-      <section id="benefits" className="py-24 px-6 lg:px-12">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-          <div className="relative">
-            <div className="aspect-square glass rounded-[60px] border-white/5 relative overflow-hidden group">
-               <div className="absolute inset-0 bg-gradient-to-tr from-growth/20 to-transparent"></div>
-               <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-3/4 h-3/4 glass rounded-[40px] border-white/10 shadow-2xl p-8 transform rotate-6 scale-90 group-hover:rotate-0 group-hover:scale-100 transition-all duration-700">
-                     <div className="w-12 h-2 rounded-full bg-growth/30 mb-8"></div>
-                     <div className="space-y-4">
-                        {[1,2,3,4].map(i => <div key={i} className="h-6 w-full rounded-lg bg-white/5"></div>)}
-                     </div>
-                  </div>
-               </div>
-            </div>
+      <section className="py-24 px-6 lg:px-12 bg-bg-soft/30 relative">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-20">
+            <h2 className="text-3xl lg:text-5xl font-head font-bold text-white mb-4">Why Financo?</h2>
+            <p className="text-text3 text-lg">The infrastructure built specifically for the local market.</p>
           </div>
-          <div>
-            <h2 className="font-head font-bold text-4xl lg:text-5xl text-white mb-8 leading-tight">
-              Why Business Owners <br/> <span className="text-gradient">Choose Financo.</span>
-            </h2>
-            <div className="space-y-8">
-              <BenefitItem 
-                title="Zero Data Loss" 
-                desc="Work offline at your shop and never worry about losing a single transaction record." 
-              />
-              <BenefitItem 
-                title="Manual Approval Security" 
-                desc="Every account is manually verified by The Palace team to ensure a high-trust ecosystem." 
-              />
-              <BenefitItem 
-                title="Better Cash Stewardship" 
-                desc="Track your MoMo, bank, and cash registers in one single, high-fidelity dashboard." 
-              />
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="glass rounded-3xl p-8 border-white/5 flex flex-col items-center text-center">
+              <div className="w-14 h-14 rounded-2xl bg-growth/10 flex items-center justify-center text-growth mb-6">
+                <Users size={28} />
+              </div>
+              <h4 className="text-xl font-bold text-white mb-4 tracking-tight">Staff Empowerment</h4>
+              <p className="text-text3 text-sm leading-relaxed">
+                Onboard workers with restricted POS-only access. Track individual performance and prevent manual inventory leakages.
+              </p>
+            </div>
+            <div className="glass rounded-3xl p-8 border-white/5 flex flex-col items-center text-center">
+              <div className="w-14 h-14 rounded-2xl bg-info/10 flex items-center justify-center text-info mb-6">
+                <CreditCard size={28} />
+              </div>
+              <h4 className="text-xl font-bold text-white mb-4 tracking-tight">Cashflow Harmony</h4>
+              <p className="text-text3 text-sm leading-relaxed">
+                Connect your BK, I&M, or MoMo accounts. See a unified view of your liquidity across all digital and cash platforms.
+              </p>
+            </div>
+            <div className="glass rounded-3xl p-8 border-white/5 flex flex-col items-center text-center">
+              <div className="w-14 h-14 rounded-2xl bg-ent/10 flex items-center justify-center text-ent mb-6">
+                <History size={28} />
+              </div>
+              <h4 className="text-xl font-bold text-white mb-4 tracking-tight">Financial Legacy</h4>
+              <p className="text-text3 text-sm leading-relaxed">
+                Build a clean financial history. High-quality reporting makes it easier to qualify for SME loans and investments.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Pricing Section */}
-      <section id="plans" className="py-24 px-6 lg:px-12 bg-bg-soft/50">
+      <section id="plans" className="py-24 px-6 lg:px-12">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20">
             <h2 className="font-head font-black text-4xl lg:text-5xl text-white mb-4">Simple, Local Pricing.</h2>
-            <p className="text-text3 text-lg">Scalable plans built for everyday Rwandan business needs.</p>
+            <p className="text-text3 text-lg">Scalable plans built for everyday operations.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {PLANS.map((plan) => (
-              <div key={plan.id} className="glass rounded-[40px] p-10 border-white/5 flex flex-col hover:border-growth/20 transition-all group">
+              <div key={plan.id} className="glass rounded-[40px] p-10 border-white/5 flex flex-col hover:border-growth/20 transition-all group hover:-translate-y-2 duration-500">
                 <div className="mb-8">
                   <h3 className="font-head font-bold text-2xl text-white mb-1">{plan.name}</h3>
                   <div className="text-3xl font-head font-black text-growth">{plan.priceRwf.toLocaleString()} <span className="text-xs font-bold text-text3 uppercase tracking-widest">RWF / Month</span></div>
@@ -202,7 +225,7 @@ export default function Landing({ onGetStarted }: { onGetStarted: () => void }) 
                 <div className="space-y-4 flex-1 mb-10">
                   {plan.features.map((feat, i) => (
                     <div key={i} className="flex items-center gap-3 text-sm text-text2">
-                      <CheckCircle2 size={16} className="text-growth" />
+                      <CheckCircle2 size={16} className="text-growth shrink-0" />
                       {feat}
                     </div>
                   ))}
@@ -239,20 +262,6 @@ function FeatureCard({ icon: Icon, title, desc }: any) {
       </div>
       <h3 className="text-xl font-bold text-white mb-3 tracking-tight">{title}</h3>
       <p className="text-text3 text-sm leading-relaxed">{desc}</p>
-    </div>
-  );
-}
-
-function BenefitItem({ title, desc }: any) {
-  return (
-    <div className="flex gap-5">
-      <div className="w-12 h-12 rounded-2xl bg-growth/10 flex items-center justify-center text-growth shrink-0">
-        <CheckCircle2 size={24} />
-      </div>
-      <div>
-        <h4 className="text-lg font-bold text-white mb-1">{title}</h4>
-        <p className="text-text3 text-sm leading-relaxed">{desc}</p>
-      </div>
     </div>
   );
 }
