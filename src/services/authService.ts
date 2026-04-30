@@ -51,6 +51,17 @@ export const authService = {
     }
   },
 
+  async isSuperAdmin(uid: string): Promise<boolean> {
+    const path = `admins/${uid}`;
+    try {
+      const docSnap = await getDoc(doc(db, path));
+      return docSnap.exists();
+    } catch (error) {
+      // Permission denied or unreachable means not admin in most cases
+      return false;
+    }
+  },
+
   async registerOwner(user: FirebaseUser, businessData: { name: string; planId: string }) {
     const bizId = `biz_${user.uid.slice(0, 8)}`;
     

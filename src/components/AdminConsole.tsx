@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ShieldCheck, 
   Users, 
@@ -11,22 +11,42 @@ import {
   CheckCircle2, 
   XSquare, 
   ArrowRight,
-  CreditCard
+  CreditCard,
+  Loader2
 } from 'lucide-react';
-
-const MOCK_QUEUE = [
-  { id: 'b_1', name: 'Nyanza Bakery', owner: 'John Doe', plan: 'STARTER', requestedAt: '2h ago' },
-  { id: 'b_2', name: 'Valley Logistics', owner: 'Sarah M.', plan: 'GROWTH', requestedAt: '5h ago' },
-  { id: 'b_3', name: 'Kigali Supermarket', owner: 'Eric U.', plan: 'ENTERPRISE', requestedAt: 'Yesterday' },
-];
+import { adminService } from '../services/adminService';
+import { Business } from '../types';
 
 export default function AdminConsole() {
-  const [queue, setQueue] = useState(MOCK_QUEUE);
+  const [queue, setQueue] = useState<Business[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({ total: 0, active: 0, pending: 0 });
 
-  const handleApprove = (id: string) => {
-    setQueue(prev => prev.filter(q => q.id !== id));
-    // Simulate WhatsApp call or database update
-    alert("Business Approved! Owner will receive a WhatsApp message.");
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const pending = await adminService.getPendingBusinesses();
+      const platformStats = await adminService.getPlatformStats();
+      setQueue(pending);
+      setStats(platformStats);
+    } catch (error) {
+      console.error("Failed to load admin data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleApprove = async (id: string) => {
+    try {
+      await adminService.approveBusiness(id);
+      await loadData();
+    } catch (error) {
+      alert("Approval failed. Check console for details.");
+    }
   };
 
   return (
@@ -42,9 +62,9 @@ export default function AdminConsole() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatsCard label="Pending Approval" value={queue.length.toString()} icon={Clock} color="warn" />
-        <StatsCard label="Active Businesses" value="142" icon={CheckCircle2} color="growth" />
-        <StatsCard label="Total Revenue" value="4.2M RWF" icon={CreditCard} color="ent" />
+        <StatsCard label="Pending Approval" value={stats.pending.toString()} icon={Clock} color="warn" />
+        <StatsCard label="Active Businesses" value={stats.active.toString()} icon={CheckCircle2} color="growth" />
+        <StatsCard label="Total Subscriptions" value={stats.total.toString()} icon={CreditCard} color="ent" />
       </div>
 
       <div className="glass rounded-[40px] border-white/5 overflow-hidden shadow-2xl">
@@ -53,11 +73,11 @@ export default function AdminConsole() {
              <Users size={20} className="text-growth" />
              <h3 className="font-head font-bold">Approval Queue</h3>
           </div>
-          <span className="text-[10px] font-bold text-text4 uppercase tracking-widest italic opacity-50">Blueprint v2.0 Platform Management</span>
+          {loading && <Loader2 className="animate-spin text-growth" size={16} />}
         </div>
 
         <div className="divide-y divide-white/5">
-          {queue.length === 0 ? (
+          {queue.length === 0 && !loading ? (
             <div className="p-20 text-center text-text4">
                <CheckCircle2 size={48} className="mx-auto mb-4 opacity-20" />
                <p className="font-bold uppercase tracking-widest text-[10px]">Queue is empty</p>
@@ -72,12 +92,12 @@ export default function AdminConsole() {
                    <div>
                      <h4 className="text-lg font-head font-bold text-white tracking-tight">{item.name}</h4>
                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-[10px] font-bold text-text3 uppercase uppercase tracking-widest">{item.owner}</span>
+                        <span className="text-[10px] font-bold text-text3 uppercase tracking-widest">{item.ownerName}</span>
                         <div className="h-1 w-1 rounded-full bg-white/10"></div>
                         <span className={`text-[9px] font-black px-2 py-0.5 rounded-md ${
-                          item.plan === 'STARTER' ? 'bg-starter/20 text-starter' : 
-                          item.plan === 'GROWTH' ? 'bg-growth/20 text-growth' : 'bg-ent/20 text-ent'
-                        }`}>{item.plan}</span>
+                          item.planId === 'STARTER' ? 'bg-starter/20 text-starter' : 
+                          item.planId === 'GROWTH' ? 'bg-growth/20 text-growth' : 'bg-ent/20 text-ent'
+                        }`}>{item.planId}</span>
                      </div>
                    </div>
                 </div>
@@ -85,7 +105,7 @@ export default function AdminConsole() {
                 <div className="flex items-center gap-8">
                    <div className="text-right">
                      <p className="text-[10px] font-bold text-text4 uppercase tracking-widest">Requested</p>
-                     <p className="text-sm font-bold text-text2 mt-1">{item.requestedAt}</p>
+                     <p className="text-sm font-bold text-text2 mt-1">{new Date(item.createdAt).toLocaleDateString()}</p>
                    </div>
                    <div className="flex gap-2">
                       <button className="w-10 h-10 rounded-xl bg-danger/10 text-danger flex items-center justify-center hover:bg-danger/20 transition-all active:scale-95 border border-danger/10">

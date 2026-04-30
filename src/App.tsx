@@ -54,13 +54,22 @@ export default function App() {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
+          // Check if user is a SuperAdmin first
+          const isAdmin = await authService.isSuperAdmin(user.uid);
+          
           const profile = await authService.getUserProfile(user.uid);
           if (profile) {
-            setRole(profile.role);
+            // Priority: if they are in admins collection, they are SUPERADMIN
+            setRole(isAdmin ? 'SUPERADMIN' : profile.role);
+            
             if (profile.businessId) {
               const biz = await authService.getBusiness(profile.businessId);
               setBusiness(biz);
             }
+            setAppState('MAIN_APP');
+          } else if (isAdmin) {
+            // Even if no profile yet, but they are in admins collection
+            setRole('SUPERADMIN');
             setAppState('MAIN_APP');
           } else {
             setAppState('AUTH');
