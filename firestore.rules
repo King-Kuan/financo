@@ -15,32 +15,29 @@ service cloud.firestore {
     function incoming() { return request.resource.data; }
     function existing() { return resource.data; }
     
-    // User must be verified (optional constraint if email verification is used)
-    function isVerified() { return request.auth.token.email_verified == true; }
-
     // Domain Helpers
     function businessExists(busId) { return exists(/databases/$(database)/documents/businesses/$(busId)); }
     function isBusinessMember(busId) { 
-      let profile = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
-      return profile.businessId == busId;
+      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.businessId == busId;
     }
 
     // --- Users Collection ---
     match /users/{userId} {
-      allow get: if isSignedIn(); // Allow checking roles
+      allow get: if isSignedIn(); 
       allow list: if isAdmin();
       allow create: if isSignedIn() && isOwner(userId) && isValidUser(incoming());
       allow update: if isSignedIn() && isOwner(userId) && (
-        // Only allow updating name, not role or businessId
-        incoming().diff(existing()).affectedKeys().hasOnly(['name', 'updatedAt'])
+        incoming().diff(existing()).affectedKeys().hasOnly(['name'])
       );
     }
 
     function isValidUser(data) {
       return data.keys().hasAll(['uid', 'email', 'role', 'createdAt']) && 
+             data.keys().size() == 4 &&
              data.uid == request.auth.uid &&
              data.role in ['OWNER', 'WORKER'] &&
-             data.email is string && data.email.size() <= 256;
+             data.email is string && data.email.size() <= 256 &&
+             data.createdAt is string; // Validated format in app
     }
 
     // --- Businesses Collection ---
@@ -50,12 +47,13 @@ service cloud.firestore {
       
       allow create: if isSignedIn() && isValidId(businessId) && isValidBusiness(incoming()) && incoming().ownerId == request.auth.uid;
       allow update: if isSignedIn() && isOwner(existing().ownerId) && (
-        (incoming().diff(existing()).affectedKeys().hasOnly(['name', 'phone', 'planId', 'status', 'updatedAt']))
+        incoming().diff(existing()).affectedKeys().hasOnly(['name', 'phone', 'planId', 'status'])
       );
     }
 
     function isValidBusiness(data) {
-      return data.keys().hasAll(['name', 'ownerId', 'ownerName', 'planId', 'status', 'createdAt']) &&
+      return data.keys().hasAll(['name', 'ownerId', 'ownerName', 'planId', 'status', 'createdAt', 'email', 'phone', 'id']) &&
+             data.keys().size() >= 8 &&
              data.ownerId == request.auth.uid &&
              data.planId in ['STARTER', 'GROWTH', 'ENTERPRISE'] &&
              data.status in ['PENDING', 'ACTIVE'] &&
@@ -65,33 +63,32 @@ service cloud.firestore {
     // --- Inventory Subcollection ---
     match /businesses/{businessId}/inventory/{productId} {
       allow read: if isSignedIn() && (isBusinessMember(businessId) || isAdmin());
-      allow write: if isSignedIn() && isBusinessMember(businessId) && isValidProduct(incoming());
+      allow create, update: if isSignedIn() && isBusinessMember(businessId) && isValidProduct(incoming());
+      allow delete: if isSignedIn() && isAdmin();
     }
 
     function isValidProduct(data) {
       return data.keys().hasAll(['name', 'price', 'stock', 'businessId']) &&
              data.price is number && data.price >= 0 &&
              data.stock is number &&
-             data.businessId is string;
+             data.businessId == businessId;
     }
 
     // --- Sales Subcollection ---
     match /businesses/{businessId}/sales/{saleId} {
       allow read: if isSignedIn() && (isBusinessMember(businessId) || isAdmin());
-      // Sales are usually append-only for workers
       allow create: if isSignedIn() && isBusinessMember(businessId) && isValidSale(incoming());
     }
 
     function isValidSale(data) {
       return data.keys().hasAll(['businessId', 'total', 'createdAt']) &&
              data.total is number && data.total >= 0 &&
-             data.createdAt == request.time;
+             data.businessId == businessId;
     }
 
     // --- Admins Collection ---
     match /admins/{userId} {
-      allow read: if isAdmin();
-      // Only existing admins can add new admins via console or backend
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
       allow write: if false; 
     }
   }
